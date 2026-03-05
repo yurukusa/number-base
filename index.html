@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Base — Base Converter (Binary, Hex, Octal, Decimal)</title>
+<meta name="description" content="Convert between binary, hex, octal, decimal and any base 2-36. Bit visualization, two's complement.">
+<meta property="og:title" content="Number Base — Base Converter (Binary, Hex, Octal, Decimal)">
+<meta property="og:description" content="Convert between binary, hex, octal, decimal and any base 2-36. Bit visualization, two's complement.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yurukusa.github.io/number-base/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Number Base — Base Converter (Binary, Hex, Octal, Decimal)">
+<meta name="twitter:description" content="Convert between binary, hex, octal, decimal and any base 2-36. Bit visualization, two's complement.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;--text2:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+header{text-align:center;padding:2rem 1rem 1rem}
+header h1{font-size:1.6rem;font-weight:600}
+header p{color:var(--text2);margin-top:.4rem;font-size:.9rem}
+main{max-width:900px;width:100%;margin:0 auto;padding:0 1rem 2rem;flex:1}
+.input-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.2rem;margin-bottom:1.5rem}
+.input-row{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
+.input-row input[type="text"]{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:1.1rem;padding:.6rem .8rem;font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;outline:none;transition:border-color .2s}
+.input-row input[type="text"]:focus{border-color:var(--accent)}
+.base-select{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.95rem;padding:.6rem .8rem;outline:none;cursor:pointer}
+.base-select:focus{border-color:var(--accent)}
+.presets{margin-top:.8rem;display:flex;flex-wrap:wrap;gap:.4rem}
+.presets span{color:var(--text2);font-size:.8rem;line-height:1.8}
+.preset-btn{background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text2);font-size:.78rem;padding:.2rem .5rem;cursor:pointer;font-family:'SF Mono',SFMono-Regular,Consolas,monospace;transition:all .15s}
+.preset-btn:hover{border-color:var(--accent);color:var(--accent)}
+.error-msg{color:var(--red);font-size:.85rem;margin-top:.5rem;display:none}
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.8rem;margin-bottom:1.5rem}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;cursor:pointer;transition:border-color .15s;position:relative}
+.result-card:hover{border-color:var(--accent)}
+.result-card .label{font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem;display:flex;justify-content:space-between;align-items:center}
+.result-card .value{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;font-size:1rem;word-break:break-all;min-height:1.4em}
+.result-card .swap-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:.75rem;padding:2px 4px;border-radius:3px;transition:color .15s}
+.result-card .swap-btn:hover{color:var(--accent)}
+.copied-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:.5rem 1.2rem;border-radius:6px;font-size:.85rem;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:99}
+.copied-toast.show{opacity:1}
+.custom-base{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.5rem;display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
+.custom-base label{color:var(--text2);font-size:.85rem}
+.custom-base .value{font-family:'SF Mono',SFMono-Regular,Consolas,monospace;font-size:1rem;flex:1;min-width:120px;word-break:break-all;cursor:pointer;padding:.4rem .6rem;border-radius:4px;transition:background .15s}
+.custom-base .value:hover{background:var(--bg)}
+.section-title{font-size:.9rem;color:var(--text2);margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.5px}
+.bit-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.5rem}
+.bit-row{margin-bottom:.8rem}
+.bit-row:last-child{margin-bottom:0}
+.bit-row .bit-label{font-size:.75rem;color:var(--text2);margin-bottom:.3rem;display:flex;justify-content:space-between}
+.bit-row .bit-label span{color:var(--yellow);font-family:'SF Mono',SFMono-Regular,Consolas,monospace}
+.bits{display:flex;flex-wrap:wrap;gap:2px}
+.bit{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-family:'SF Mono',SFMono-Regular,Consolas,monospace;font-size:.8rem;border-radius:3px;background:var(--bg);border:1px solid var(--border);transition:all .15s}
+.bit.one{background:#1a3a2a;border-color:var(--green);color:var(--green)}
+.bit.zero{color:var(--text2)}
+.bit-separator{width:6px}
+.twos-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.5rem}
+.twos-row{display:flex;gap:1.5rem;flex-wrap:wrap}
+.twos-item{flex:1;min-width:180px}
+.twos-item .label{font-size:.75rem;color:var(--text2);margin-bottom:.2rem}
+.twos-item .value{font-family:'SF Mono',SFMono-Regular,Consolas,monospace;font-size:.95rem}
+.ascii-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem}
+.ascii-char{font-size:2rem;font-family:'SF Mono',SFMono-Regular,Consolas,monospace;background:var(--bg);border:1px solid var(--border);border-radius:6px;width:3rem;height:3rem;display:flex;align-items:center;justify-content:center}
+.ascii-info{color:var(--text2);font-size:.85rem}
+.hidden{display:none!important}
+footer{text-align:center;padding:1.5rem;color:var(--text2);font-size:.85rem;border-top:1px solid var(--border);margin-top:auto}
+@media(max-width:600px){
+  .input-row{flex-direction:column}
+  .input-row input[type="text"]{min-width:0;width:100%}
+  .results{grid-template-columns:1fr}
+  .bit{width:24px;height:24px;font-size:.7rem}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Number Base Converter</h1>
+  <p>Convert between binary, hex, octal, decimal and any base (2–36)</p>
+</header>
+<main>
+  <div class="input-section">
+    <div class="input-row">
+      <input type="text" id="input" placeholder="Enter a number (e.g. 255, 0xFF, 0b1010, 0o77)" autocomplete="off" spellcheck="false">
+      <select class="base-select" id="inputBase">
+        <option value="0">Auto-detect</option>
+      </select>
+    </div>
+    <div class="presets">
+      <span>Presets:</span>
+      <button class="preset-btn" data-value="255" data-base="10">255</button>
+      <button class="preset-btn" data-value="65535" data-base="10">65535</button>
+      <button class="preset-btn" data-value="0xFF" data-base="0">0xFF</button>
+      <button class="preset-btn" data-value="0b11111111" data-base="0">0b11111111</button>
+      <button class="preset-btn" data-value="0o377" data-base="0">0o377</button>
+      <button class="preset-btn" data-value="42" data-base="10">42</button>
+      <button class="preset-btn" data-value="3735928559" data-base="10">DEADBEEF</button>
+      <button class="preset-btn" data-value="48879" data-base="10">BEEF</button>
+    </div>
+    <div class="error-msg" id="error"></div>
+  </div>
+
+  <div id="outputArea" class="hidden">
+    <div class="section-title">Conversions</div>
+    <div class="results" id="results"></div>
+
+    <div class="custom-base">
+      <label>Custom base:</label>
+      <select class="base-select" id="customBase"></select>
+      <div class="value" id="customResult" title="Click to copy">—</div>
+    </div>
+
+    <div class="section-title">Bit Visualization</div>
+    <div class="bit-section" id="bitSection"></div>
+
+    <div class="section-title">Two's Complement</div>
+    <div class="twos-section" id="twosSection"></div>
+
+    <div id="asciiWrapper" class="hidden">
+      <div class="section-title">ASCII</div>
+      <div class="ascii-section" id="asciiSection"></div>
+    </div>
+  </div>
+</main>
+<footer>
+  <a href="https://yurukusa.github.io/dev-toolkit/">Dev Toolkit</a> — 76+ free browser-based developer tools
+</footer>
+<div class="copied-toast" id="toast">Copied!</div>
+
+<script>
+const DIGITS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const inputEl = document.getElementById('input');
+const inputBaseEl = document.getElementById('inputBase');
+const customBaseEl = document.getElementById('customBase');
+const errorEl = document.getElementById('error');
+const outputArea = document.getElementById('outputArea');
+const resultsEl = document.getElementById('results');
+const customResult = document.getElementById('customResult');
+const bitSection = document.getElementById('bitSection');
+const twosSection = document.getElementById('twosSection');
+const asciiWrapper = document.getElementById('asciiWrapper');
+const asciiSection = document.getElementById('asciiSection');
+const toast = document.getElementById('toast');
+
+// Populate base selectors
+for (let i = 2; i <= 36; i++) {
+  const opt1 = document.createElement('option');
+  opt1.value = i; opt1.textContent = `Base ${i}`;
+  if (i === 10) opt1.selected = true;
+  inputBaseEl.appendChild(opt1);
+
+  const opt2 = document.createElement('option');
+  opt2.value = i; opt2.textContent = `Base ${i}`;
+  if (i === 7) opt2.selected = true;
+  customBaseEl.appendChild(opt2);
+}
+
+const COMMON_BASES = [
+  { base: 2, name: 'Binary', prefix: '0b' },
+  { base: 8, name: 'Octal', prefix: '0o' },
+  { base: 10, name: 'Decimal', prefix: '' },
+  { base: 16, name: 'Hexadecimal', prefix: '0x' },
+  { base: 32, name: 'Base 32', prefix: '' },
+  { base: 36, name: 'Base 36', prefix: '' },
+];
+
+function showToast(msg) {
+  toast.textContent = msg || 'Copied!';
+  toast.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('show'), 1200);
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => showToast());
+}
+
+function bigIntToBase(n, base) {
+  if (n === 0n) return '0';
+  const neg = n < 0n;
+  if (neg) n = -n;
+  const b = BigInt(base);
+  let result = '';
+  while (n > 0n) {
+    result = DIGITS[Number(n % b)] + result;
+    n = n / b;
+  }
+  return (neg ? '-' : '') + result;
+}
+
+function parseBigInt(str, base) {
+  str = str.toUpperCase().trim();
+  const neg = str.startsWith('-');
+  if (neg) str = str.slice(1);
+  let result = 0n;
+  const b = BigInt(base);
+  for (const ch of str) {
+    const idx = DIGITS.indexOf(ch);
+    if (idx < 0 || idx >= base) throw new Error(`Invalid digit '${ch}' for base ${base}`);
+    result = result * b + BigInt(idx);
+  }
+  return neg ? -result : result;
+}
+
+function detectAndParse(raw) {
+  raw = raw.trim();
+  const baseVal = parseInt(inputBaseEl.value);
+
+  if (baseVal === 0) {
+    // Auto-detect prefixes
+    const neg = raw.startsWith('-');
+    const s = neg ? raw.slice(1) : raw;
+    let val;
+    if (/^0x/i.test(s)) {
+      val = parseBigInt(s.slice(2), 16);
+    } else if (/^0b/i.test(s)) {
+      val = parseBigInt(s.slice(2), 2);
+    } else if (/^0o/i.test(s)) {
+      val = parseBigInt(s.slice(2), 8);
+    } else {
+      val = parseBigInt(s, 10);
+    }
+    return neg ? -val : val;
+  }
+
+  return parseBigInt(raw.replace(/^-/, '').replace(/^0[xXbBoO]/, ''), baseVal) * (raw.startsWith('-') ? -1n : 1n);
+}
+
+function formatBinary(bin) {
+  // Group into 4-bit segments from the right
+  while (bin.length % 4 !== 0) bin = '0' + bin;
+  return bin.match(/.{4}/g).join(' ');
+}
+
+function renderBits(val, width) {
+  const html = [];
+  let mask;
+  if (val < 0n) {
+    // Two's complement representation
+    mask = (1n << BigInt(width)) + val;
+  } else {
+    mask = val & ((1n << BigInt(width)) - 1n);
+  }
+  const bits = [];
+  for (let i = width - 1; i >= 0; i--) {
+    const b = (mask >> BigInt(i)) & 1n;
+    bits.push(b);
+  }
+
+  let out = '';
+  for (let i = 0; i < bits.length; i++) {
+    if (i > 0 && i % 4 === 0) out += '<div class="bit-separator"></div>';
+    out += `<div class="bit ${bits[i] === 1n ? 'one' : 'zero'}">${bits[i]}</div>`;
+  }
+  return out;
+}
+
+function twosComplement(val, width) {
+  const max = 1n << BigInt(width);
+  const half = max / 2n;
+  let unsigned = ((val % max) + max) % max;
+  let signed = unsigned >= half ? unsigned - max : unsigned;
+  return { signed, unsigned };
+}
+
+function update() {
+  const raw = inputEl.value.trim();
+  if (!raw) {
+    outputArea.classList.add('hidden');
+    errorEl.style.display = 'none';
+    return;
+  }
+
+  let val;
+  try {
+    val = detectAndParse(raw);
+    errorEl.style.display = 'none';
+  } catch (e) {
+    errorEl.textContent = e.message;
+    errorEl.style.display = 'block';
+    outputArea.classList.add('hidden');
+    return;
+  }
+
+  outputArea.classList.remove('hidden');
+
+  // Common base results
+  resultsEl.innerHTML = '';
+  for (const { base, name, prefix } of COMMON_BASES) {
+    const converted = bigIntToBase(val, base);
+    const display = base === 2 ? formatBinary(converted.replace('-', '')) : converted;
+    const displayWithSign = val < 0n && base === 2 ? '-' + display : display;
+
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.innerHTML = `
+      <div class="label">
+        <span>${name} (base ${base})</span>
+        <button class="swap-btn" title="Use as input in base ${base}">&#8593; swap</button>
+      </div>
+      <div class="value">${prefix}${displayWithSign}</div>
+    `;
+    card.addEventListener('click', (e) => {
+      if (e.target.classList.contains('swap-btn')) {
+        inputEl.value = converted;
+        inputBaseEl.value = base;
+        update();
+        return;
+      }
+      copyText(converted);
+    });
+    resultsEl.appendChild(card);
+  }
+
+  // Custom base
+  const cb = parseInt(customBaseEl.value);
+  const customVal = bigIntToBase(val, cb);
+  customResult.textContent = customVal;
+
+  // Bit visualization
+  const absVal = val < 0n ? -val : val;
+  const bitLen = absVal === 0n ? 1 : absVal.toString(2).length;
+  const widths = [8, 16, 32].filter(w => w >= bitLen || val < 0n);
+  if (widths.length === 0) widths.push(32);
+
+  let bitHtml = '';
+  for (const w of widths) {
+    const tc = twosComplement(val, w);
+    bitHtml += `<div class="bit-row">
+      <div class="bit-label">${w}-bit <span>${val < 0n ? 'two\'s complement' : 'unsigned'}: ${tc.unsigned}</span></div>
+      <div class="bits">${renderBits(val, w)}</div>
+    </div>`;
+  }
+  bitSection.innerHTML = bitHtml;
+
+  // Two's complement
+  let twosHtml = '<div class="twos-row">';
+  for (const w of [8, 16, 32]) {
+    const tc = twosComplement(val, w);
+    twosHtml += `<div class="twos-item">
+      <div class="label">${w}-bit signed</div>
+      <div class="value">${tc.signed}</div>
+    </div>
+    <div class="twos-item">
+      <div class="label">${w}-bit unsigned</div>
+      <div class="value">${tc.unsigned}</div>
+    </div>`;
+  }
+  twosHtml += '</div>';
+  twosSection.innerHTML = twosHtml;
+
+  // ASCII
+  if (val >= 32n && val <= 126n) {
+    asciiWrapper.classList.remove('hidden');
+    const ch = String.fromCharCode(Number(val));
+    asciiSection.innerHTML = `
+      <div class="ascii-char">${ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '&' ? '&amp;' : ch}</div>
+      <div class="ascii-info">Character: <strong>${ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '&' ? '&amp;' : ch}</strong> (code point ${val})</div>
+    `;
+  } else {
+    asciiWrapper.classList.add('hidden');
+  }
+}
+
+inputEl.addEventListener('input', update);
+inputBaseEl.addEventListener('change', update);
+customBaseEl.addEventListener('change', update);
+
+customResult.addEventListener('click', () => {
+  const text = customResult.textContent;
+  if (text && text !== '—') copyText(text);
+});
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    inputEl.value = btn.dataset.value;
+    inputBaseEl.value = btn.dataset.base;
+    update();
+  });
+});
+</script>
+</body>
+</html>
